@@ -1,55 +1,238 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>College Navigation</title>
+
+    <!-- Leaflet Map -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #222;
+        }
+
+        header {
+            background: #243b6b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        header p {
+            margin: 8px 0 0;
+            font-size: 15px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #243b6b;
+        }
+
+        button {
+            background: #243b6b;
+            color: white;
+            border: none;
+            padding: 13px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #16294d;
+        }
+
+        #location {
+            margin-top: 15px;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 12px;
+        }
+
+        .college-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .college {
+            background: #eef3ff;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .college h3 {
+            margin: 0 0 5px;
+            color: #243b6b;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
 
-<h1>🎓 College Navigation</h1>
+<header>
+    <h1>🎓 College Navigation</h1>
+    <p>Find your location and navigate easily</p>
+</header>
 
-<p>Live GPS Navigation</p>
+<div class="container">
 
-<button onclick="getLocation()">
-    📍 Find My Location
-</button>
+    <div class="card">
+        <h2>📍 Live GPS Navigation</h2>
 
-<p id="location">Waiting for location...</p>
+        <button onclick="getLocation()">
+            📍 Find My Location
+        </button>
+
+        <div id="location">
+            Click the button to find your current location.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🗺️ Your Location on Map</h2>
+        <div id="map"></div>
+    </div>
+
+    <div class="card">
+        <h2>🏫 Nearby Colleges</h2>
+
+        <div class="college-list">
+
+            <div class="college">
+                <h3>🏛️ Andhra University</h3>
+                <p>Visakhapatnam, Andhra Pradesh</p>
+            </div>
+
+            <div class="college">
+                <h3>🎓 IIT Tirupati</h3>
+                <p>Tirupati, Andhra Pradesh</p>
+            </div>
+
+            <div class="college">
+                <h3>🏫 Vignan University</h3>
+                <p>Guntur, Andhra Pradesh</p>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    © 2026 College Navigation | GPS Based Navigation
+</footer>
+
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-function getLocation() {
+    let map = L.map('map').setView([20.5937, 78.9629], 5);
 
-    if (navigator.geolocation) {
+    L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            attribution: '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(map);
+
+    let marker;
+
+    function getLocation() {
+
+        const locationText = document.getElementById("location");
+
+        if (!navigator.geolocation) {
+            locationText.innerHTML =
+                "❌ GPS is not supported by your browser.";
+            return;
+        }
+
+        locationText.innerHTML =
+            "⏳ Getting your location...";
 
         navigator.geolocation.getCurrentPosition(
-            
+
             function(position) {
 
-                document.getElementById("location").innerHTML =
-                "Latitude: " + position.coords.latitude +
-                "<br>Longitude: " + position.coords.longitude;
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
 
+                locationText.innerHTML =
+                    "<b>📍 Location Found!</b><br>" +
+                    "Latitude: " + latitude.toFixed(6) + "<br>" +
+                    "Longitude: " + longitude.toFixed(6);
+
+                map.setView([latitude, longitude], 16);
+
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+
+                marker = L.marker([latitude, longitude])
+                    .addTo(map)
+                    .bindPopup(
+                        "<b>📍 You are here!</b><br>" +
+                        "Latitude: " + latitude.toFixed(6) +
+                        "<br>Longitude: " + longitude.toFixed(6)
+                    )
+                    .openPopup();
             },
 
-            function() {
+            function(error) {
 
-                document.getElementById("location").innerHTML =
-                "Location permission was denied.";
-
+                locationText.innerHTML =
+                    "❌ Unable to get your location.<br>" +
+                    "Please allow location permission and try again.";
             }
-
         );
-
-    } else {
-
-        document.getElementById("location").innerHTML =
-        "GPS is not supported.";
-
     }
-}
 
 </script>
 
 </body>
-</html>
+    </html>
