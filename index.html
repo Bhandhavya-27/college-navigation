@@ -6,6 +6,12 @@
 
     <title>MIC College Navigation</title>
 
+    <!-- Leaflet Map -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -34,11 +40,22 @@
             padding: 15px 25px;
             border-radius: 8px;
             font-size: 16px;
+            margin: 5px;
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
 
         #location {
             margin-top: 20px;
             line-height: 1.8;
+        }
+
+        #map {
+            height: 400px;
+            margin-top: 20px;
+            border-radius: 12px;
         }
     </style>
 </head>
@@ -62,9 +79,19 @@
         Location not detected yet.
     </div>
 
+    <div id="map"></div>
+
 </div>
 
+<!-- Leaflet JavaScript -->
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
 <script>
+
+let map;
+let marker;
 
 function findLocation() {
 
@@ -99,6 +126,45 @@ function findLocation() {
                 "<br>" +
                 "Longitude: " +
                 longitude.toFixed(6);
+
+            // Create map for the first time
+            if (!map) {
+
+                map = L.map("map").setView(
+                    [latitude, longitude],
+                    17
+                );
+
+                L.tileLayer(
+                    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    {
+                        attribution:
+                        "&copy; OpenStreetMap contributors"
+                    }
+                ).addTo(map);
+            }
+
+            else {
+
+                map.setView(
+                    [latitude, longitude],
+                    17
+                );
+            }
+
+            // Remove old marker
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            // Add current location marker
+            marker = L.marker(
+                [latitude, longitude]
+            ).addTo(map);
+
+            marker.bindPopup(
+                "📍 You are here"
+            ).openPopup();
 
         },
 
