@@ -88,67 +88,47 @@
 
 <script>
 
-let studentMarker = null;
-let watchId = null;
-
 function findLocation() {
 
     const output = document.getElementById("location");
 
     if (!navigator.geolocation) {
-
-        output.innerHTML =
-            "❌ GPS is not supported by your browser.";
-
+        output.innerHTML = "❌ GPS is not supported.";
         return;
     }
 
-    output.innerHTML =
-        "📍 Starting live location tracking...";
+    output.innerHTML = "📍 Finding your location...";
 
-    watchId = navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
 
         function(position) {
 
-            const latitude =
-                position.coords.latitude;
-
-            const longitude =
-                position.coords.longitude;
-
-            const accuracy =
-                position.coords.accuracy;
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
 
             output.innerHTML =
-                "<b>📍 Live Location</b><br>" +
-                "Latitude: " +
-                latitude.toFixed(6) +
+                "📍 Your location found!<br>" +
+                "Latitude: " + lat.toFixed(6) +
                 "<br>" +
-                "Longitude: " +
-                longitude.toFixed(6) +
-                "<br>" +
-                "Accuracy: approximately " +
-                Math.round(accuracy) +
-                " metres";
+                "Longitude: " + lng.toFixed(6);
 
+        },
 
-            /*
-             * Create the marker the first time.
-             */
+        function(error) {
 
-            if (studentMarker === null) {
+            output.innerHTML =
+                "❌ Location could not be obtained.<br>" +
+                "Error code: " + error.code;
 
-                studentMarker =
-                    L.marker([
-                        latitude,
-                        longitude
-                    ])
-                    .addTo(map)
-                    .bindPopup(
-                        "📍 You are here!"
-                    );
+        },
 
-            }
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        }
+    );
+}
 
             /*
              * Move the marker whenever
