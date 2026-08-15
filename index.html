@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MIC College Navigation</title>
-
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MIC College Navigation</title>
 
     <style>
         body {
-            font-family: Arial;
-            margin: 0;
-            background: #f2f5f9;
+            font-family: Arial, sans-serif;
             text-align: center;
+            background: #f3f6fa;
+            margin: 0;
         }
 
         header {
             background: #174ea6;
             color: white;
-            padding: 20px;
+            padding: 25px;
         }
 
         .box {
             background: white;
-            margin: 15px;
-            padding: 20px;
+            margin: 20px;
+            padding: 25px;
             border-radius: 15px;
         }
 
@@ -30,13 +31,14 @@
             background: #174ea6;
             color: white;
             border: none;
-            padding: 14px;
+            padding: 15px 25px;
             border-radius: 8px;
             font-size: 16px;
         }
 
         #location {
-            margin-top: 15px;
+            margin-top: 20px;
+            line-height: 1.8;
         }
     </style>
 </head>
@@ -50,148 +52,73 @@
 
 <div class="box">
 
-    <h2>📍 Your Location</h2>
-
-   <div class="box">
-
-    <h2>📍 Your Location</h2>
+    <h2>📍 Your Current Location</h2>
 
     <button onclick="findLocation()">
         📍 Find My Location
     </button>
 
-    <p id="location">
+    <div id="location">
         Location not detected yet.
-    </p>
-
-   </div>
+    </div>
 
 </div>
-
-
-<div class="box">
-
-    <h2>🎯 Admission Destinations</h2>
-
-    <h3>🏫 BED Block</h3>
-
-    <p>
-        📝 Registration
-    </p>
-
-    <p>
-        📄 Certificate Verification
-    </p>
-
-    <button onclick="bedBlock()">
-        🏫 Go to BED Block
-    </button>
-
-    <p id="destination"></p>
-
-</div>
-
 
 <script>
 
 function findLocation() {
 
-    const output = document.getElementById("location");
+    const locationBox =
+        document.getElementById("location");
+
+    locationBox.innerHTML =
+        "⏳ Finding your location...";
 
     if (!navigator.geolocation) {
-        output.innerHTML = "❌ GPS is not supported.";
+
+        locationBox.innerHTML =
+            "❌ Your browser does not support GPS.";
+
         return;
     }
-
-    output.innerHTML = "📍 Finding your location...";
 
     navigator.geolocation.getCurrentPosition(
 
         function(position) {
 
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+            const latitude =
+                position.coords.latitude;
 
-            output.innerHTML =
-                "📍 Your location found!<br>" +
-                "Latitude: " + lat.toFixed(6) +
+            const longitude =
+                position.coords.longitude;
+
+            locationBox.innerHTML =
+                "✅ <b>Location Found!</b><br><br>" +
+                "Latitude: " +
+                latitude.toFixed(6) +
                 "<br>" +
-                "Longitude: " + lng.toFixed(6);
+                "Longitude: " +
+                longitude.toFixed(6);
 
         },
 
         function(error) {
 
-            output.innerHTML =
-                "❌ Location could not be obtained.<br>" +
-                "Error code: " + error.code;
+            locationBox.innerHTML =
+                "❌ GPS could not be accessed.<br><br>" +
+                "Error code: " +
+                error.code +
+                "<br>" +
+                error.message;
 
         },
 
         {
             enableHighAccuracy: true,
-            timeout: 15000,
+            timeout: 20000,
             maximumAge: 0
         }
     );
-}
-
-            /*
-             * Move the marker whenever
-             * the phone location changes.
-             */
-
-            else {
-
-                studentMarker.setLatLng([
-                    latitude,
-                    longitude
-                ]);
-
-            }
-
-
-            /*
-             * Keep the map centered
-             * on the student.
-             */
-
-            map.setView([
-                latitude,
-                longitude
-            ], 17);
-
-        },
-
-
-        function(error) {
-
-            output.innerHTML =
-                "❌ Unable to track your location.<br>" +
-                "Please allow location permission.";
-
-        },
-
-
-        {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 10000
-        }
-
-    );
-}
-
-
-function bedBlock() {
-
-    document.getElementById("destination").innerHTML =
-        "🏫 BED Block selected.<br>" +
-        "Registration and Certificate Verification " +
-        "are located here.<br><br>" +
-        "📍 Exact BED Block GPS location will be added " +
-        "when we collect it at the college.";
-
 }
 
 </script>
