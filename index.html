@@ -36,13 +36,22 @@
             background: #174ea6;
             color: white;
             border: none;
-            padding: 15px 25px;
+            padding: 14px 20px;
             border-radius: 8px;
             font-size: 16px;
-            margin: 5px;
+            margin: 6px;
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
 
         #location {
+            margin-top: 20px;
+            line-height: 1.8;
+        }
+
+        #destination {
             margin-top: 20px;
             line-height: 1.8;
         }
@@ -51,6 +60,13 @@
             height: 400px;
             margin-top: 20px;
             border-radius: 12px;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #eef3ff;
         }
     </style>
 </head>
@@ -62,9 +78,12 @@
     <p>DVR & Dr. HS MIC College of Technology</p>
 </header>
 
+
+<!-- LIVE LOCATION -->
+
 <div class="box">
 
-    <h2>📍 Live Location</h2>
+    <h2>📍 My Live Location</h2>
 
     <button onclick="startTracking()">
         ▶️ Start Live Tracking
@@ -74,25 +93,106 @@
         ⏹️ Stop Tracking
     </button>
 
-    <div id="location">
+    <div id="location" class="status">
         Live tracking not started.
     </div>
+
+</div>
+
+
+<!-- DESTINATION MENU -->
+
+<div class="box">
+
+    <h2>🧭 Find My Destination</h2>
+
+    <p>Select where you want to go:</p>
+
+    <button onclick="selectDestination('BED Department')">
+        🏫 BED Department
+    </button>
+
+    <button onclick="selectDestination('Reporting')">
+        🧾 Reporting
+    </button>
+
+    <button onclick="selectDestination('Administration')">
+        🏢 Administration
+    </button>
+
+    <button onclick="selectDestination('ECE')">
+        📡 ECE
+    </button>
+
+    <button onclick="selectDestination('CSE')">
+        💻 CSE
+    </button>
+
+    <button onclick="selectDestination('EEE')">
+        ⚡ EEE
+    </button>
+
+    <button onclick="selectDestination('IT')">
+        🖥️ IT
+    </button>
+
+    <button onclick="selectDestination('Mechanical')">
+        ⚙️ Mechanical
+    </button>
+
+    <button onclick="selectDestination('Civil')">
+        🏗️ Civil
+    </button>
+
+    <button onclick="selectDestination('AI & DS')">
+        🤖 AI & DS
+    </button>
+
+    <button onclick="selectDestination('AI & ML')">
+        🤖 AI & ML
+    </button>
+
+    <button onclick="selectDestination('Other')">
+        📍 Other
+    </button>
+
+    <div id="destination" class="status">
+        No destination selected.
+    </div>
+
+</div>
+
+
+<!-- MAP -->
+
+<div class="box">
+
+    <h2>🗺️ Interactive Map</h2>
 
     <div id="map"></div>
 
 </div>
 
+
 <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 </script>
 
+
 <script>
 
-let map;
-let marker;
+let map = null;
+let marker = null;
 let watchID = null;
 
-// Start live tracking
+let currentLatitude = null;
+let currentLongitude = null;
+
+
+// ======================================
+// START LIVE TRACKING
+// ======================================
+
 function startTracking() {
 
     const locationBox =
@@ -101,7 +201,15 @@ function startTracking() {
     if (!navigator.geolocation) {
 
         locationBox.innerHTML =
-            "❌ GPS is not supported by this browser.";
+            "❌ GPS is not supported by your browser.";
+
+        return;
+    }
+
+    if (watchID !== null) {
+
+        locationBox.innerHTML =
+            "🟢 Live tracking is already active.";
 
         return;
     }
@@ -109,43 +217,45 @@ function startTracking() {
     locationBox.innerHTML =
         "⏳ Starting live tracking...";
 
-    // Avoid starting tracking twice
-    if (watchID !== null) {
-        return;
-    }
 
     watchID = navigator.geolocation.watchPosition(
 
         function(position) {
 
-            const latitude =
+            currentLatitude =
                 position.coords.latitude;
 
-            const longitude =
+            currentLongitude =
                 position.coords.longitude;
 
             const accuracy =
                 position.coords.accuracy;
 
+
             locationBox.innerHTML =
                 "🟢 <b>Live Tracking Active</b><br><br>" +
                 "Latitude: " +
-                latitude.toFixed(6) +
+                currentLatitude.toFixed(6) +
                 "<br>" +
                 "Longitude: " +
-                longitude.toFixed(6) +
+                currentLongitude.toFixed(6) +
                 "<br>" +
                 "Accuracy: ±" +
                 accuracy.toFixed(1) +
                 " meters";
 
+
             // Create map
             if (!map) {
 
                 map = L.map("map").setView(
-                    [latitude, longitude],
+                    [
+                        currentLatitude,
+                        currentLongitude
+                    ],
                     18
                 );
+
 
                 L.tileLayer(
                     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -156,42 +266,43 @@ function startTracking() {
                 ).addTo(map);
             }
 
+
             // Create marker
             if (!marker) {
 
-                marker = L.marker(
-                    [latitude, longitude]
-                ).addTo(map);
+                marker = L.marker([
+                    currentLatitude,
+                    currentLongitude
+                ]).addTo(map);
 
                 marker.bindPopup(
                     "📍 You are here"
-                ).openPopup();
+                );
 
             } else {
 
-                // Move marker
-                marker.setLatLng(
-                    [latitude, longitude]
-                );
+                marker.setLatLng([
+                    currentLatitude,
+                    currentLongitude
+                ]);
             }
 
-            // Keep map centered on you
-            map.setView(
-                [latitude, longitude],
-                18
-            );
+
+            // Keep map centered on current position
+            map.setView([
+                currentLatitude,
+                currentLongitude
+            ]);
         },
+
 
         function(error) {
 
             locationBox.innerHTML =
                 "❌ Unable to track location.<br><br>" +
-                "Error code: " +
-                error.code +
-                "<br>" +
                 error.message;
-
         },
+
 
         {
             enableHighAccuracy: true,
@@ -202,11 +313,11 @@ function startTracking() {
 }
 
 
-// Stop live tracking
-function stopTracking() {
+// ======================================
+// STOP LIVE TRACKING
+// ======================================
 
-    const locationBox =
-        document.getElementById("location");
+function stopTracking() {
 
     if (watchID !== null) {
 
@@ -216,9 +327,28 @@ function stopTracking() {
 
         watchID = null;
 
-        locationBox.innerHTML =
+        document.getElementById("location").innerHTML =
             "⏹️ Live tracking stopped.";
     }
+}
+
+
+// ======================================
+// SELECT DESTINATION
+// ======================================
+
+function selectDestination(destinationName) {
+
+    const destinationBox =
+        document.getElementById("destination");
+
+
+    destinationBox.innerHTML =
+        "📍 <b>Selected:</b> " +
+        destinationName +
+        "<br><br>" +
+        "⚠️ Exact location has not been saved yet.<br>" +
+        "The app will not use guessed coordinates.";
 }
 
 </script>
