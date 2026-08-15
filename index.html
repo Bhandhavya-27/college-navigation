@@ -88,52 +88,111 @@
 
 <script>
 
+let studentMarker = null;
+let watchId = null;
+
 function findLocation() {
 
-    const output =
-        document.getElementById("location");
+    const output = document.getElementById("location");
 
     if (!navigator.geolocation) {
 
         output.innerHTML =
-            "GPS is not supported.";
+            "❌ GPS is not supported by your browser.";
 
         return;
     }
 
     output.innerHTML =
-        "⏳ Finding your location...";
+        "📍 Starting live location tracking...";
 
-    navigator.geolocation.getCurrentPosition(
+    watchId = navigator.geolocation.watchPosition(
 
         function(position) {
 
-            const lat =
+            const latitude =
                 position.coords.latitude;
 
-            const lng =
+            const longitude =
                 position.coords.longitude;
 
+            const accuracy =
+                position.coords.accuracy;
+
             output.innerHTML =
-                "📍 Your location found!<br>" +
+                "<b>📍 Live Location</b><br>" +
                 "Latitude: " +
-                lat.toFixed(6) +
+                latitude.toFixed(6) +
                 "<br>" +
                 "Longitude: " +
-                lng.toFixed(6);
+                longitude.toFixed(6) +
+                "<br>" +
+                "Accuracy: approximately " +
+                Math.round(accuracy) +
+                " metres";
+
+
+            /*
+             * Create the marker the first time.
+             */
+
+            if (studentMarker === null) {
+
+                studentMarker =
+                    L.marker([
+                        latitude,
+                        longitude
+                    ])
+                    .addTo(map)
+                    .bindPopup(
+                        "📍 You are here!"
+                    );
+
+            }
+
+            /*
+             * Move the marker whenever
+             * the phone location changes.
+             */
+
+            else {
+
+                studentMarker.setLatLng([
+                    latitude,
+                    longitude
+                ]);
+
+            }
+
+
+            /*
+             * Keep the map centered
+             * on the student.
+             */
+
+            map.setView([
+                latitude,
+                longitude
+            ], 17);
 
         },
 
-        function() {
+
+        function(error) {
 
             output.innerHTML =
-                "❌ Location permission denied.";
+                "❌ Unable to track your location.<br>" +
+                "Please allow location permission.";
 
         },
 
+
         {
-            enableHighAccuracy: true
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
         }
+
     );
 }
 
