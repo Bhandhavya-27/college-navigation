@@ -1,83 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>MIC College Navigation</title>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>College Navigation</title>
-
-    <!-- Leaflet Map -->
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             background: #f4f7fb;
-            color: #222;
+            text-align: center;
         }
 
         header {
-            background: #243b6b;
+            background: #174ea6;
             color: white;
             padding: 20px;
-            text-align: center;
         }
 
         header h1 {
             margin: 0;
-            font-size: 28px;
-        }
-
-        header p {
-            margin: 8px 0 0;
-            font-size: 15px;
+            font-size: 24px;
         }
 
         .container {
-            max-width: 900px;
-            margin: 20px auto;
             padding: 15px;
         }
 
         .card {
             background: white;
             padding: 20px;
+            margin-bottom: 15px;
             border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            margin-bottom: 20px;
-        }
-
-        .card h2 {
-            margin-top: 0;
-            color: #243b6b;
+            box-shadow: 0 3px 10px #cccccc;
         }
 
         button {
-            background: #243b6b;
+            background: #174ea6;
             color: white;
             border: none;
             padding: 13px 20px;
             border-radius: 8px;
             font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #16294d;
         }
 
         #location {
             margin-top: 15px;
-            line-height: 1.7;
-            font-size: 15px;
+            line-height: 1.6;
         }
 
         #map {
@@ -85,149 +58,135 @@
             width: 100%;
             border-radius: 12px;
         }
-
-        .college-list {
-            display: grid;
-            gap: 12px;
-        }
-
-        .college {
-            background: #eef3ff;
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        .college h3 {
-            margin: 0 0 5px;
-            color: #243b6b;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 14px;
-        }
     </style>
 </head>
 
 <body>
 
 <header>
-    <h1>🎓 College Navigation</h1>
-    <p>Find your location and navigate easily</p>
+    <h1>🎓 MIC College Navigation</h1>
+    <p>DVR & Dr. HS MIC College of Technology</p>
 </header>
 
 <div class="container">
 
     <div class="card">
-        <h2>📍 Live GPS Navigation</h2>
 
-        <button onclick="getLocation()">
-            📍 Find My Location
+        <h2>📍 Your Current Location</h2>
+
+        <button onclick="findLocation()">
+            Find My Location
         </button>
 
         <div id="location">
-            Click the button to find your current location.
+            Location not detected yet.
         </div>
+
     </div>
 
     <div class="card">
-        <h2>🗺️ Your Location on Map</h2>
+
+        <h2>🗺️ Campus Map</h2>
+
         <div id="map"></div>
-    </div>
 
-    <div class="card">
-        <h2>🏫 Nearby Colleges</h2>
-
-        <div class="college-list">
-
-            <div class="college">
-                <h3>🏛️ Andhra University</h3>
-                <p>Visakhapatnam, Andhra Pradesh</p>
-            </div>
-
-            <div class="college">
-                <h3>🎓 IIT Tirupati</h3>
-                <p>Tirupati, Andhra Pradesh</p>
-            </div>
-
-            <div class="college">
-                <h3>🏫 Vignan University</h3>
-                <p>Guntur, Andhra Pradesh</p>
-            </div>
-
-        </div>
     </div>
 
 </div>
 
-<footer>
-    © 2026 College Navigation | GPS Based Navigation
-</footer>
-
-<!-- Leaflet JavaScript -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-    let map = L.map('map').setView([20.5937, 78.9629], 5);
+    // MIC College approximate campus location
+    const collegeLat = 16.624032;
+    const collegeLng = 80.452492;
 
+    // Create map
+    const map = L.map("map").setView(
+        [collegeLat, collegeLng],
+        16
+    );
+
+    // OpenStreetMap
     L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         {
-            attribution: '&copy; OpenStreetMap contributors'
+            attribution: "&copy; OpenStreetMap contributors"
         }
     ).addTo(map);
 
-    let marker;
+    // College marker
+    L.marker([collegeLat, collegeLng])
+        .addTo(map)
+        .bindPopup(
+            "<b>🎓 DVR & Dr. HS MIC College of Technology</b>"
+        )
+        .openPopup();
 
-    function getLocation() {
+    let studentMarker;
 
-        const locationText = document.getElementById("location");
+    function findLocation() {
+
+        const output =
+            document.getElementById("location");
 
         if (!navigator.geolocation) {
-            locationText.innerHTML =
-                "❌ GPS is not supported by your browser.";
+
+            output.innerHTML =
+                "GPS is not supported.";
+
             return;
         }
 
-        locationText.innerHTML =
-            "⏳ Getting your location...";
+        output.innerHTML =
+            "⏳ Finding your location...";
 
         navigator.geolocation.getCurrentPosition(
 
             function(position) {
 
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
+                const lat =
+                    position.coords.latitude;
 
-                locationText.innerHTML =
-                    "<b>📍 Location Found!</b><br>" +
-                    "Latitude: " + latitude.toFixed(6) + "<br>" +
-                    "Longitude: " + longitude.toFixed(6);
+                const lng =
+                    position.coords.longitude;
 
-                map.setView([latitude, longitude], 16);
+                output.innerHTML =
+                    "<b>📍 You are here</b><br>" +
+                    "Latitude: " + lat.toFixed(6) +
+                    "<br>" +
+                    "Longitude: " + lng.toFixed(6);
 
-                if (marker) {
-                    map.removeLayer(marker);
+                // Move map to student
+                map.setView([lat, lng], 16);
+
+                // Remove old marker
+                if (studentMarker) {
+                    map.removeLayer(studentMarker);
                 }
 
-                marker = L.marker([latitude, longitude])
+                // Student marker
+                studentMarker =
+                    L.marker([lat, lng])
                     .addTo(map)
-                    .bindPopup(
-                        "<b>📍 You are here!</b><br>" +
-                        "Latitude: " + latitude.toFixed(6) +
-                        "<br>Longitude: " + longitude.toFixed(6)
-                    )
+                    .bindPopup("📍 You are here!")
                     .openPopup();
+
             },
 
-            function(error) {
+            function() {
 
-                locationText.innerHTML =
-                    "❌ Unable to get your location.<br>" +
-                    "Please allow location permission and try again.";
+                output.innerHTML =
+                    "❌ Unable to get your location. " +
+                    "Please allow location permission.";
+
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             }
         );
     }
@@ -235,4 +194,4 @@
 </script>
 
 </body>
-    </html>
+</html>
