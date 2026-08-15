@@ -6,7 +6,6 @@
 
     <title>MIC College Navigation</title>
 
-    <!-- Leaflet Map -->
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -43,10 +42,6 @@
             margin: 5px;
         }
 
-        button:active {
-            transform: scale(0.98);
-        }
-
         #location {
             margin-top: 20px;
             line-height: 1.8;
@@ -69,21 +64,24 @@
 
 <div class="box">
 
-    <h2>📍 Your Current Location</h2>
+    <h2>📍 Live Location</h2>
 
-    <button onclick="findLocation()">
-        📍 Find My Location
+    <button onclick="startTracking()">
+        ▶️ Start Live Tracking
+    </button>
+
+    <button onclick="stopTracking()">
+        ⏹️ Stop Tracking
     </button>
 
     <div id="location">
-        Location not detected yet.
+        Live tracking not started.
     </div>
 
     <div id="map"></div>
 
 </div>
 
-<!-- Leaflet JavaScript -->
 <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 </script>
@@ -92,24 +90,31 @@
 
 let map;
 let marker;
+let watchID = null;
 
-function findLocation() {
+// Start live tracking
+function startTracking() {
 
     const locationBox =
         document.getElementById("location");
 
-    locationBox.innerHTML =
-        "⏳ Finding your location...";
-
     if (!navigator.geolocation) {
 
         locationBox.innerHTML =
-            "❌ Your browser does not support GPS.";
+            "❌ GPS is not supported by this browser.";
 
         return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    locationBox.innerHTML =
+        "⏳ Starting live tracking...";
+
+    // Avoid starting tracking twice
+    if (watchID !== null) {
+        return;
+    }
+
+    watchID = navigator.geolocation.watchPosition(
 
         function(position) {
 
@@ -119,20 +124,27 @@ function findLocation() {
             const longitude =
                 position.coords.longitude;
 
+            const accuracy =
+                position.coords.accuracy;
+
             locationBox.innerHTML =
-                "✅ <b>Location Found!</b><br><br>" +
+                "🟢 <b>Live Tracking Active</b><br><br>" +
                 "Latitude: " +
                 latitude.toFixed(6) +
                 "<br>" +
                 "Longitude: " +
-                longitude.toFixed(6);
+                longitude.toFixed(6) +
+                "<br>" +
+                "Accuracy: ±" +
+                accuracy.toFixed(1) +
+                " meters";
 
-            // Create map for the first time
+            // Create map
             if (!map) {
 
                 map = L.map("map").setView(
                     [latitude, longitude],
-                    17
+                    18
                 );
 
                 L.tileLayer(
@@ -144,34 +156,36 @@ function findLocation() {
                 ).addTo(map);
             }
 
-            else {
+            // Create marker
+            if (!marker) {
 
-                map.setView(
-                    [latitude, longitude],
-                    17
+                marker = L.marker(
+                    [latitude, longitude]
+                ).addTo(map);
+
+                marker.bindPopup(
+                    "📍 You are here"
+                ).openPopup();
+
+            } else {
+
+                // Move marker
+                marker.setLatLng(
+                    [latitude, longitude]
                 );
             }
 
-            // Remove old marker
-            if (marker) {
-                map.removeLayer(marker);
-            }
-
-            // Add current location marker
-            marker = L.marker(
-                [latitude, longitude]
-            ).addTo(map);
-
-            marker.bindPopup(
-                "📍 You are here"
-            ).openPopup();
-
+            // Keep map centered on you
+            map.setView(
+                [latitude, longitude],
+                18
+            );
         },
 
         function(error) {
 
             locationBox.innerHTML =
-                "❌ GPS could not be accessed.<br><br>" +
+                "❌ Unable to track location.<br><br>" +
                 "Error code: " +
                 error.code +
                 "<br>" +
@@ -185,6 +199,26 @@ function findLocation() {
             maximumAge: 0
         }
     );
+}
+
+
+// Stop live tracking
+function stopTracking() {
+
+    const locationBox =
+        document.getElementById("location");
+
+    if (watchID !== null) {
+
+        navigator.geolocation.clearWatch(
+            watchID
+        );
+
+        watchID = null;
+
+        locationBox.innerHTML =
+            "⏹️ Live tracking stopped.";
+    }
 }
 
 </script>
