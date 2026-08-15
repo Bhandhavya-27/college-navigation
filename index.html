@@ -1,525 +1,155 @@
-     <!DOCTYPE html>
-<html lang="en">
-
+<!DOCTYPE html>
+<html>
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
     <title>MIC College Navigation</title>
 
-    <!-- Leaflet Map -->
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
         body {
+            font-family: Arial;
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3f6fa;
-            color: #222;
+            background: #f2f5f9;
+            text-align: center;
         }
 
         header {
             background: #174ea6;
             color: white;
-            text-align: center;
-            padding: 22px 15px;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-
-        header p {
-            margin: 8px 0 0;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: auto;
-            padding: 15px;
-        }
-
-        .card {
-            background: white;
             padding: 20px;
-            margin-bottom: 18px;
-            border-radius: 15px;
-            box-shadow: 0 3px 10px #cccccc;
         }
 
-        h2 {
-            color: #174ea6;
-            margin-top: 0;
-        }
-
-        select {
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            border: 1px solid #aaa;
-            font-size: 16px;
+        .box {
             background: white;
+            margin: 15px;
+            padding: 20px;
+            border-radius: 15px;
         }
 
         button {
-            width: 100%;
-            margin-top: 12px;
-            padding: 14px;
             background: #174ea6;
             color: white;
             border: none;
+            padding: 14px;
             border-radius: 8px;
             font-size: 16px;
-        }
-
-        button:active {
-            background: #0d3b7a;
         }
 
         #location {
             margin-top: 15px;
-            line-height: 1.6;
         }
-
-        #destinationInfo {
-            margin-top: 15px;
-            padding: 12px;
-            background: #eef4ff;
-            border-radius: 8px;
-            display: none;
-        }
-
-        #map {
-            height: 400px;
-            width: 100%;
-            border-radius: 12px;
-        }
-
-        .step {
-            padding: 12px;
-            margin: 8px 0;
-            background: #f0f4ff;
-            border-radius: 8px;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            font-size: 14px;
-        }
-
     </style>
-
 </head>
-
 
 <body>
 
 <header>
-
     <h1>🎓 MIC College Navigation</h1>
-
-    <p>
-        DVR & Dr. HS MIC College of Technology
-    </p>
-
+    <p>DVR & Dr. HS MIC College of Technology</p>
 </header>
 
+<div class="box">
 
-<div class="container">
+    <h2>📍 Your Location</h2>
 
+    <button onclick="findLocation()">
+        Find My Location
+    </button>
 
-    <!-- GPS -->
-
-    <div class="card">
-
-        <h2>📍 Your Current Location</h2>
-
-        <button onclick="startLocation()">
-            📍 Find My Location
-        </button>
-
-        <div id="location">
-            Location not detected yet.
-        </div>
-
-    </div>
-
-
-    <!-- Destination -->
-
-    <div class="card">
-
-        <h2>🎯 Where do you want to go?</h2>
-
-        <select id="destination"
-                onchange="showDestination()">
-
-            <option value="">
-                -- Select Destination --
-            </option>
-
-            <option value="bed">
-                🏫 BED Block
-            </option>
-
-            <option value="registration">
-                📝 Registration
-            </option>
-
-            <option value="verification">
-                📄 Certificate Verification
-            </option>
-
-        </select>
-
-
-        <div id="destinationInfo"></div>
-
-        <button onclick="startNavigation()">
-            🧭 Start Navigation
-        </button>
-
-    </div>
-
-
-    <!-- Map -->
-
-    <div class="card">
-
-        <h2>🗺️ Navigation Map</h2>
-
-        <div id="map"></div>
-
-    </div>
-
-
-    <!-- Admission process -->
-
-    <div class="card">
-
-        <h2>🎓 Admission Process</h2>
-
-        <div class="step">
-            1️⃣ Visit BED Block
-        </div>
-
-        <div class="step">
-            2️⃣ Complete Registration
-        </div>
-
-        <div class="step">
-            3️⃣ Complete Certificate Verification
-        </div>
-
-        <p>
-            More admission locations can be added later.
-        </p>
-
-    </div>
-
+    <p id="location">
+        Location not detected yet.
+    </p>
 
 </div>
 
 
-<footer>
+<div class="box">
 
-    MIC College Navigation System
+    <h2>🎯 Admission Destinations</h2>
 
-</footer>
+    <h3>🏫 BED Block</h3>
 
+    <p>
+        📝 Registration
+    </p>
 
-<!-- Leaflet -->
+    <p>
+        📄 Certificate Verification
+    </p>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
+    <button onclick="bedBlock()">
+        🏫 Go to BED Block
+    </button>
+
+    <p id="destination"></p>
+
+</div>
 
 
 <script>
 
-    /*
-       MIC College location
-    */
+function findLocation() {
 
-    const collegeLat = 16.624032;
-    const collegeLng = 80.452492;
+    const output =
+        document.getElementById("location");
 
-
-    /*
-       BED BLOCK LOCATION
-
-       We DON'T know the exact coordinates yet.
-
-       These will be added when you visit the college.
-    */
-
-    let bedLat = null;
-    let bedLng = null;
-
-
-    /*
-       Create map
-    */
-
-    const map = L.map("map").setView(
-        [collegeLat, collegeLng],
-        16
-    );
-
-
-    /*
-       OpenStreetMap
-    */
-
-    L.tileLayer(
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-            attribution:
-            "&copy; OpenStreetMap contributors"
-        }
-    ).addTo(map);
-
-
-    /*
-       College marker
-    */
-
-    L.marker(
-        [collegeLat, collegeLng]
-    )
-    .addTo(map)
-    .bindPopup(
-        "<b>🎓 DVR & Dr. HS MIC College of Technology</b>"
-    );
-
-
-    /*
-       Student marker
-    */
-
-    let studentMarker = null;
-
-
-    /*
-       Current location
-    */
-
-    function startLocation() {
-
-        const output =
-            document.getElementById("location");
-
-
-        if (!navigator.geolocation) {
-
-            output.innerHTML =
-                "❌ GPS is not supported.";
-
-            return;
-        }
-
+    if (!navigator.geolocation) {
 
         output.innerHTML =
-            "⏳ Getting your location...";
+            "GPS is not supported.";
 
-
-        navigator.geolocation.getCurrentPosition(
-
-            function(position) {
-
-                const lat =
-                    position.coords.latitude;
-
-                const lng =
-                    position.coords.longitude;
-
-
-                output.innerHTML =
-                    "<b>📍 Your Location</b><br>" +
-                    "Latitude: " +
-                    lat.toFixed(6) +
-                    "<br>" +
-                    "Longitude: " +
-                    lng.toFixed(6);
-
-
-                /*
-                   Remove old marker
-                */
-
-                if (studentMarker) {
-
-                    map.removeLayer(
-                        studentMarker
-                    );
-
-                }
-
-
-                /*
-                   Create student marker
-                */
-
-                studentMarker =
-                    L.marker([lat, lng])
-                    .addTo(map)
-                    .bindPopup(
-                        "📍 You are here!"
-                    )
-                    .openPopup();
-
-
-                /*
-                   Move map to student
-                */
-
-                map.setView(
-                    [lat, lng],
-                    16
-                );
-
-            },
-
-
-            function() {
-
-                output.innerHTML =
-                    "❌ Location permission " +
-                    "was denied.";
-
-            },
-
-
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
-
-        );
-
+        return;
     }
 
+    output.innerHTML =
+        "⏳ Finding your location...";
 
-    /*
-       Destination information
-    */
+    navigator.geolocation.getCurrentPosition(
 
-    function showDestination() {
+        function(position) {
 
-        const destination =
-            document.getElementById(
-                "destination"
-            ).value;
+            const lat =
+                position.coords.latitude;
 
-        const info =
-            document.getElementById(
-                "destinationInfo"
-            );
+            const lng =
+                position.coords.longitude;
 
+            output.innerHTML =
+                "📍 Your location found!<br>" +
+                "Latitude: " +
+                lat.toFixed(6) +
+                "<br>" +
+                "Longitude: " +
+                lng.toFixed(6);
 
-        if (destination === "") {
+        },
 
-            info.style.display = "none";
+        function() {
 
-            return;
+            output.innerHTML =
+                "❌ Location permission denied.";
+
+        },
+
+        {
+            enableHighAccuracy: true
         }
+    );
+}
 
 
-        info.style.display = "block";
+function bedBlock() {
 
+    document.getElementById("destination").innerHTML =
+        "🏫 BED Block selected.<br>" +
+        "Registration and Certificate Verification " +
+        "are located here.<br><br>" +
+        "📍 Exact BED Block GPS location will be added " +
+        "when we collect it at the college.";
 
-        if (destination === "bed") {
-
-            info.innerHTML =
-                "<b>🏫 BED Block</b><br>" +
-                "Registration and Certificate " +
-                "Verification are conducted here.";
-
-        }
-
-
-        else if (destination === "registration") {
-
-            info.innerHTML =
-                "<b>📝 Registration</b><br>" +
-                "Location: BED Block";
-
-        }
-
-
-        else if (destination === "verification") {
-
-            info.innerHTML =
-                "<b>📄 Certificate Verification</b><br>" +
-                "Location: BED Block";
-
-        }
-
-    }
-
-
-    /*
-       Navigation button
-    */
-
-    function startNavigation() {
-
-        const destination =
-            document.getElementById(
-                "destination"
-            ).value;
-
-
-        if (destination === "") {
-
-            alert(
-                "Please select a destination."
-            );
-
-            return;
-        }
-
-
-        if (
-            destination === "bed" ||
-            destination === "registration" ||
-            destination === "verification"
-        ) {
-
-            if (
-                bedLat === null ||
-                bedLng === null
-            ) {
-
-                alert(
-                    "The exact BED Block location " +
-                    "has not been added yet. " +
-                    "We will add it when you visit " +
-                    "the college."
-                );
-
-                return;
-
-            }
-
-        }
-
-    }
+}
 
 </script>
 
 </body>
-
 </html>
