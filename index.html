@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>College Navigation</title>
+</head>
+
+<body>
+
+<h1>🎓 College Navigation</h1>
+
+<p>Live GPS Navigation</p>
+
+<button onclick="getLocation()">
+    📍 Find My Location
+</button>
+
+<p id="location">Waiting for location...</p>
+
+<script>
+
+function getLocation() {
+
+    if (navigator.geolocation) {
+
+        navigator.geolocation.getCurrentPosition(
+            
+            function(position) {
+
+                document.getElementById("location").innerHTML =
+                "Latitude: " + position.coords.latitude +
+                "<br>Longitude: " + position.coords.longitude;
+
+            },
+
+            function() {
+
+                document.getElementById("location").innerHTML =
+                "Location permission was denied.";
+
+            }
+
+        );
+
+    } else {
+
+        document.getElementById("location").innerHTML =
+        "GPS is not supported.";
+
+    }
+}
+
+</script>
+
+</body>
+</html>
